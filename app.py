@@ -1,16 +1,17 @@
 """
-Inventory Management System - Flask REST API
-A simple REST API for managing inventory items with external API integration.
+Inventory Management System - REST API with Flask
+This is the main API file for managing inventory
 """
 
 from flask import Flask, request, jsonify
 import requests
 from datetime import datetime
 
+# Create Flask app
 app = Flask(__name__)
 
-# Mock database - stores inventory items as a list
-# Each item has an ID, name, brand, price, quantity, and other details
+# Array to store inventory items
+# Using list as mock database (not a real database)
 inventory = [
     {
         "id": 1,
@@ -34,22 +35,20 @@ inventory = [
     }
 ]
 
-# Helper function to get the next available ID
+
 def get_next_id():
-    """Get the next available ID for a new inventory item"""
+    # Helper function to get next ID
+    # Just find the max ID and add 1
     if not inventory:
         return 1
     return max(item["id"] for item in inventory) + 1
 
 
-# ===== GET ENDPOINTS =====
+# GET ROUTES
 
 @app.route('/inventory', methods=['GET'])
 def get_all_inventory():
-    """
-    Fetch all inventory items
-    Returns: JSON list of all inventory items
-    """
+    # Get all items from inventory
     return jsonify({
         "status": "success",
         "count": len(inventory),
@@ -59,11 +58,7 @@ def get_all_inventory():
 
 @app.route('/inventory/<int:item_id>', methods=['GET'])
 def get_inventory_item(item_id):
-    """
-    Fetch a single inventory item by ID
-    Args: item_id (int) - The ID of the item to retrieve
-    Returns: JSON object of the requested item or 404 error
-    """
+    # Get one item by id
     for item in inventory:
         if item["id"] == item_id:
             return jsonify({
@@ -77,25 +72,21 @@ def get_inventory_item(item_id):
     }), 404
 
 
-# ===== POST ENDPOINT =====
+# POST ROUTE - Create new item
 
 @app.route('/inventory', methods=['POST'])
 def create_inventory_item():
-    """
-    Add a new inventory item to the database
-    Request body should contain: product_name, brands, price, quantity, barcode (optional)
-    Returns: JSON object of the newly created item
-    """
+    # Add a new item to inventory
     data = request.get_json()
     
-    # Validate required fields
+    # Check if required fields are there
     if not data or not all(key in data for key in ["product_name", "brands", "price", "quantity"]):
         return jsonify({
             "status": "error",
             "message": "Missing required fields: product_name, brands, price, quantity"
         }), 400
     
-    # Create new item with auto-generated ID
+    # Create the item
     new_item = {
         "id": get_next_id(),
         "product_name": data["product_name"],
@@ -107,6 +98,7 @@ def create_inventory_item():
         "created_at": datetime.now().strftime("%Y-%m-%d")
     }
     
+    # Add to inventory
     inventory.append(new_item)
     
     return jsonify({
@@ -116,20 +108,17 @@ def create_inventory_item():
     }), 201
 
 
-# ===== PATCH ENDPOINT =====
+# PATCH ROUTE - Update existing item
 
 @app.route('/inventory/<int:item_id>', methods=['PATCH'])
 def update_inventory_item(item_id):
-    """
-    Update an existing inventory item (supports partial updates)
-    Can update: product_name, brands, price, quantity, ingredients_text
-    Returns: JSON object of the updated item or 404 error
-    """
+    # Update an item
     data = request.get_json()
     
+    # Find the item and update it
     for item in inventory:
         if item["id"] == item_id:
-            # Update fields if provided in request
+            # Update fields if they are in the request
             if "product_name" in data:
                 item["product_name"] = data["product_name"]
             if "brands" in data:
@@ -155,15 +144,11 @@ def update_inventory_item(item_id):
     }), 404
 
 
-# ===== DELETE ENDPOINT =====
+# DELETE ROUTE
 
 @app.route('/inventory/<int:item_id>', methods=['DELETE'])
 def delete_inventory_item(item_id):
-    """
-    Delete an inventory item by ID
-    Args: item_id (int) - The ID of the item to delete
-    Returns: Success message or 404 error
-    """
+    # Delete item from inventory
     global inventory
     
     for i, item in enumerate(inventory):
@@ -181,15 +166,11 @@ def delete_inventory_item(item_id):
     }), 404
 
 
-# ===== HELPER ROUTE FOR EXTERNAL API =====
+# EXTERNAL API ROUTE - Search OpenFoodFacts
 
 @app.route('/search-external', methods=['POST'])
 def search_external_api():
-    """
-    Search for product data from OpenFoodFacts API by barcode or product name
-    Request body: {"barcode": "123456"} or {"product_name": "milk"}
-    Returns: Product data from external API or error message
-    """
+    # Search external API for products
     data = request.get_json()
     
     if not data:
@@ -201,6 +182,7 @@ def search_external_api():
     barcode = data.get("barcode")
     product_name = data.get("product_name")
     
+    # Need either barcode or product name
     if not barcode and not product_name:
         return jsonify({
             "status": "error",
@@ -209,10 +191,8 @@ def search_external_api():
     
     try:
         if barcode:
-            # Search by barcode
             result = search_product_by_barcode(barcode)
         else:
-            # Search by product name
             result = search_product_by_name(product_name)
         
         return jsonify({
@@ -228,11 +208,7 @@ def search_external_api():
 
 
 def search_product_by_barcode(barcode):
-    """
-    Search OpenFoodFacts API for product by barcode
-    Args: barcode (str) - Product barcode
-    Returns: Product data dictionary
-    """
+    # Search using barcode
     url = f"https://world.openfoodfacts.org/api/v0/product/{barcode}.json"
     
     try:
@@ -261,11 +237,7 @@ def search_product_by_barcode(barcode):
 
 
 def search_product_by_name(product_name):
-    """
-    Search OpenFoodFacts API for products by name
-    Args: product_name (str) - Product name to search for
-    Returns: List of product data dictionaries
-    """
+    # Search using product name
     url = "https://world.openfoodfacts.org/cgi/search.pl"
     params = {
         "search_terms": product_name,
@@ -302,11 +274,10 @@ def search_product_by_name(product_name):
         raise Exception(f"API request failed: {str(e)}")
 
 
-# ===== ERROR HANDLERS =====
+# ERROR HANDLERS
 
 @app.errorhandler(404)
 def not_found(error):
-    """Handle 404 errors"""
     return jsonify({
         "status": "error",
         "message": "Endpoint not found"
@@ -315,7 +286,6 @@ def not_found(error):
 
 @app.errorhandler(405)
 def method_not_allowed(error):
-    """Handle 405 errors (method not allowed)"""
     return jsonify({
         "status": "error",
         "message": "Method not allowed"
@@ -324,13 +294,12 @@ def method_not_allowed(error):
 
 @app.errorhandler(500)
 def server_error(error):
-    """Handle 500 errors"""
     return jsonify({
         "status": "error",
         "message": "Internal server error"
     }), 500
 
 
+# Run the app
 if __name__ == '__main__':
-    # Run the Flask app in debug mode for development
     app.run(debug=True, host='0.0.0.0', port=5000)

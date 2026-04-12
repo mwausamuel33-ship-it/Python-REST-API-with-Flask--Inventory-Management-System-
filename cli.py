@@ -1,40 +1,40 @@
 """
-CLI Interface for Inventory Management System
-A command-line tool to interact with the Flask REST API
+CLI Tool for Inventory Management API
+Connect to Flask REST API and do CRUD operations through command line
 """
 
 import requests
 import json
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
-# Base URL for the API (change if running on different host/port)
+# URL for Flask API server
 BASE_URL = "http://localhost:5000"
 
 
 def print_header(text):
-    """Print a formatted header"""
+    # Print a nice looking header
     print("\n" + "="*60)
     print(f"  {text}")
     print("="*60)
 
 
 def print_success(message):
-    """Print a success message"""
+    # Green success message
     print(f"✓ {message}")
 
 
 def print_error(message):
-    """Print an error message"""
+    # Red error message
     print(f"✗ Error: {message}")
 
 
 def print_info(message):
-    """Print an info message"""
+    # Info message
     print(f"ℹ {message}")
 
 
 def format_item(item: Dict[str, Any]):
-    """Format an inventory item for display"""
+    # Format item nicely for display
     print(f"\n  ID: {item['id']}")
     print(f"  Product: {item['product_name']}")
     print(f"  Brand: {item['brands']}")
@@ -46,7 +46,7 @@ def format_item(item: Dict[str, Any]):
 
 
 def get_all_inventory():
-    """Fetch and display all inventory items"""
+    # Get and display all items
     print_header("View All Inventory Items")
     
     try:
@@ -76,7 +76,7 @@ def get_all_inventory():
 
 
 def get_single_item():
-    """Fetch and display a single inventory item by ID"""
+    # Get one item by ID
     print_header("View Single Inventory Item")
     
     try:
@@ -106,7 +106,7 @@ def get_single_item():
 
 
 def add_new_item():
-    """Add a new inventory item"""
+    # Add item to inventory
     print_header("Add New Inventory Item")
     
     try:
@@ -123,7 +123,7 @@ def add_new_item():
         
         ingredients = input("  Ingredients (optional): ").strip()
         
-        # Validate required fields
+        # Validate
         if not product_name or not brands or price < 0 or quantity < 0:
             print_error("Please fill in all required fields with valid values")
             return
@@ -141,7 +141,7 @@ def add_new_item():
         if ingredients:
             payload["ingredients_text"] = ingredients
         
-        # Send request
+        # Send to API
         response = requests.post(
             f"{BASE_URL}/inventory",
             json=payload,
@@ -167,7 +167,7 @@ def add_new_item():
 
 
 def update_item():
-    """Update an existing inventory item"""
+    # Update existing item
     print_header("Update Inventory Item")
     
     try:
@@ -217,7 +217,7 @@ def update_item():
             print_error("No fields to update")
             return
         
-        # Send request
+        # Send PATCH request
         response = requests.patch(
             f"{BASE_URL}/inventory/{item_id}",
             json=payload,
@@ -242,7 +242,7 @@ def update_item():
 
 
 def delete_item():
-    """Delete an inventory item"""
+    # Delete item from inventory
     print_header("Delete Inventory Item")
     
     try:
@@ -281,7 +281,7 @@ def delete_item():
 
 
 def search_external_api():
-    """Search for products on OpenFoodFacts API"""
+    # Search OpenFoodFacts API
     print_header("Search External API (OpenFoodFacts)")
     
     search_type = input("  Search by (1) Barcode or (2) Product Name? Enter 1 or 2: ").strip()
@@ -332,7 +332,7 @@ def search_external_api():
                 print(f"  Ingredients: {results['ingredients_text']}")
                 print(f"  Quantity: {results['quantity']}")
                 
-                # Ask if user wants to add to inventory
+                # Ask to add to inventory
                 add_to_inv = input("\n  Add this product to inventory? (yes/no): ").strip().lower()
                 if add_to_inv == 'yes':
                     try:
@@ -377,7 +377,7 @@ def search_external_api():
 
 
 def show_menu():
-    """Display the main menu"""
+    # Display main menu
     print_header("Inventory Management System - CLI")
     print("""
   1. View all inventory items
@@ -391,7 +391,7 @@ def show_menu():
 
 
 def main():
-    """Main CLI loop"""
+    # Main loop for CLI
     print("\n" + "="*60)
     print("  Welcome to Inventory Management System CLI")
     print("  Make sure the Flask server is running on localhost:5000")
