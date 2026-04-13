@@ -20,6 +20,27 @@ A simple yet comprehensive REST API for managing inventory items with external A
 - **Python Version**: 3.10+
 - **Package Manager**: pip
 
+## Code Refactoring (Junior Developer Edition)
+
+This project has been refactored to be cleaner and more maintainable while keeping a junior developer style:
+
+| File | Original | Refactored | Reduction |
+|------|----------|-----------|-----------|
+| **app.py** | 306 lines | 139 lines | 55% ↓ |
+| **cli.py** | 425 lines | 119 lines | 72% ↓ |
+| **Total** | 731 lines | 258 lines | 65% ↓ |
+
+✨ **All functionality preserved** - Every feature works exactly as before!
+
+**Key refactoring highlights:**
+- Combined repetitive functions into reusable helpers
+- Removed excessive comments and docstrings
+- Simplified error handling logic
+- Cleaner code structure without sacrificing readability
+- Perfect for learning how to write efficient junior developer code
+
+See [REFACTORING_SUMMARY.md](./REFACTORING_SUMMARY.md) for detailed changes.
+
 ## Project Structure
 
 ```
