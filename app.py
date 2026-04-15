@@ -1,5 +1,3 @@
-"""Inventory Management System - REST API"""
-
 from flask import Flask,request,jsonify
 import requests
 from datetime import datetime
@@ -45,27 +43,7 @@ def create_inventory_item():
     return jsonify({"status":"success","message":"Item created","data":ni}),201
 
 
-@app.route('/inventory/<int:item_id>',methods=['PATCH'])
-def update_inventory_item(item_id):
-    i=find_item(item_id)
-    if not i:return jsonify({"status":"error","message":f"Item {item_id} not found"}),404
-    d=request.get_json()
-    if"product_name"in d:i["product_name"]=d["product_name"]
-    if"brands"in d:i["brands"]=d["brands"]
-    if"price"in d:i["price"]=float(d["price"])
-    if"quantity"in d:i["quantity"]=int(d["quantity"])
-    if"ingredients_text"in d:i["ingredients_text"]=d["ingredients_text"]
-    if"barcode"in d:i["barcode"]=d["barcode"]
-    return jsonify({"status":"success","message":"Item updated","data":i}),200
 
-
-@app.route('/inventory/<int:item_id>',methods=['DELETE'])
-def delete_inventory_item(item_id):
-    global inventory
-    for i in range(len(inventory)):
-        if inventory[i]["id"]==item_id:
-            return jsonify({"status":"success","message":"Item deleted","data":inventory.pop(i)}),200
-    return jsonify({"status":"error","message":f"Item {item_id} not found"}),404
 
 
 @app.route('/search-external',methods=['POST'])
